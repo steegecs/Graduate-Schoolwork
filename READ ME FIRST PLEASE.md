@@ -1,6 +1,6 @@
 # Sharing-Repository
 
-"PCA, SVD, LDA Assignment.pdf" 
+("PCA, SVD, LDA Assignment.pdf") -----> 
 This file is a demonstration of EDA, principal component analysis, singular value decomposition, and linear discriminant analysis in python
 for a class project across multiple data sets. The purpose was to gain intuition about how and why they work and also to understand when their use is appropriate. 
 After completing this project, I better understood how dimensionality reduction methods like PCA and SVD are effective in capturing the most variance
@@ -9,8 +9,8 @@ about how PCA and SVD are limited as classifiers. LDA does a much better job as 
 separation between the desired classes and is optimized for this purpose by its objective function. 
 
 
-"The Study of Wine Quality.R"
-"Wine Presentation - pdf.pdf"
+("The Study of Wine Quality.R"
+"Wine Presentation - pdf.pdf") ----->
 The second two files are also from class projects. The purpose of these projects were to learn visualize and describe the variables of a data. 
 Specifically, we wanted understand how skewed distributions affects summary statistcs and when to suspect of outliers that could compromise
 data integrity.
