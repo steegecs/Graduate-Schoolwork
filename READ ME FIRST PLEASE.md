@@ -11,6 +11,6 @@ separation between the desired classes and is optimized for this purpose by its 
 
 ("The Study of Wine Quality.R"
 "Wine Presentation - pdf.pdf") ----->
-The second two files are also from class projects. The purpose of these projects were to learn visualize and describe the variables of a data. 
+The last two files are also from class projects. The purpose of these projects were to learn visualize and describe the variables of a data. 
 Specifically, we wanted understand how skewed distributions affects summary statistics and when to suspect of outliers that could compromise
 data integrity.
