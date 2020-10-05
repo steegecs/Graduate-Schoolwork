@@ -1,0 +1,307 @@
+---
+title: "Statistical Analysis of Wine Data Set"
+
+---
+
+*Chris Steege*
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+In this section of the project, I will be, again, working with the red wine data set which contains 1599 wines with 11 qualities and an associated quality rating. I will be performing 3 different statistical procedures on the Wine Density, Residual Sugar, and Wine Quality columns of data set. These statistical procedures involve using the central limit theorem, bootstrapping, and maximum likelihood estimate to estimate the population mean, standard deviation, and proportion (Wine Quality only) of these variables from the sample, standard error, confidence intervals. 
+
+## Data Preparation {.tabset}
+
+### Packages Required {.tabset}
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+library(dplyr)
+library(stats4)
+library(DT)
+library(tinytex)
+library(webshot)
+```
+
+---
+
+### Data Import {.tabset}
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+red_wine <- read.csv("C:/Users/Chris Steege/Documents/Classes/Fall 2020/Statistical Methods/winequality-red.csv", header=FALSE, sep=';', skip=1)
+colnames(red_wine) <- c("fixed acidity","volatile acidity","citric acid","residual sugar","chlorides","free sulfur dioxide","total sulfur dioxide","density","pH","sulphates","alcohol","quality")
+```
+
+---
+
+### Data Preview {.tabset}
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+datatable(head(red_wine))
+```
+
+---
+
+## CLT, Bootstrapping, and MLE {.tabset}
+
+### Wine Density {.tabset}
+
+Here is an estimation of the population mean of wine density from our sample.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+Density <- red_wine[,8]
+mean(Density)
+```
+
+Using the central limit theorem, we can quantify the variability of our mean estimation.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+Standard_error <- sd(Density)/sqrt(length(Density))
+Standard_error
+```
+
+Our confidence intervals are derived from the standard error. 
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+CLT_CI_Density <- c(mean(Density) - 2*Standard_error, mean(Density) + 2*Standard_error)
+
+CLT_CI_Density
+```
+
+Using the bootstrap method, we can also derive the variability of our estimate and a confidence interval.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+mu.hat.set <- NULL
+for (k in 1:2000) {
+  Bootstrap <- sample(Density, size=1599, replace = T)
+  mu.hat <- mean(Bootstrap)
+  mu.hat.set[k] <- mu.hat
+}
+
+Bootstrap_mean <- mean(mu.hat.set)
+Bootstrap_variability <- sd(mu.hat.set)
+print("Variability")
+
+Bootstrap_CI_Density <-quantile(mu.hat.set, probs=c(0.025,0.975))
+
+print("Confidence Interval")
+Bootstrap_CI_Density
+
+```
+
+The difference between bootstrap variability and the standard error from the central limit theorem is very small. 
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+Bootstrap_variability - Standard_error
+```
+
+Our confidence intervals appear to be very close as well.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+print("Confidence Intervals")
+Bootstrap_CI_Density
+CLT_CI_Density
+```
+
+We can use a normal distribution to model the density as shown from our histogram.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+hist(Density, main="Histogram for density")
+```
+
+We can find the MLE of the mean and standard deviation using the normal distribution to obtain probabilities for optimization. The standard error is also printed beside each. 
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+minuslog.lik <- function(mu, sigma){
+  log.lik <- 0
+  for(i in 1:1599) {
+    log.lik <- log.lik+log(dnorm(10*Density[i], mean = mu, sd=sigma))
+  }
+  return (-log.lik)
+}
+
+density.est <- mle(minuslog=minuslog.lik, start=list(mu=mean(10*Density), sigma = sd(10*Density)))
+
+summary(density.est)@coef/10
+
+```
+
+### Wine Residual Sugar {.tabset}
+
+Here is an estimation of the Residual Sugar mean based on the sample.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+Residual.sugar <- red_wine[,4]
+ResidualSugar_mean <- mean(Residual.sugar)
+mean(Residual.sugar)
+
+```
+
+
+Even though the residual sugar is highly skewed, we can still use the CLT theorem to quantity the variability of our estimate because the variability is relative to a normal distribution by the central limit theorem. Our 95% confidence interval is given below.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+Standard_error_residual <- sd(red_wine[,4])/sqrt(length(Residual.sugar))
+
+CLT_CI_Redidual <- c(mean(Residual.sugar) - 2*Standard_error_residual, mean(Residual.sugar) + 2*Standard_error_residual)
+
+CLT_CI_Redidual
+
+```
+
+A quality of the bootstrap confidence interval is that it is symmetric. We can use this method as well to quantify the variability of our estimate and obtain a confidence interval. 
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+mu.hat.set_res <- NULL
+for (k in 1:2000) {
+  Bootstrap <- sample(Residual.sugar, size=1599, replace = T)
+  mu.hat <- mean(Bootstrap)
+  mu.hat.set_res[k] <- mu.hat
+}
+
+Bootstrap_mean_residual <- mean(mu.hat.set_res)
+Bootstap_variability_residual <- sd(mu.hat.set_res)
+
+Bootstrap_mean_residual
+
+Bootstrap_CI_Residual <- c(mean(Residual.sugar) - 2*Standard_error_residual, mean(Residual.sugar) + 2*Standard_error_residual)
+
+Bootstrap_CI_Residual
+```
+
+As mentioned earlier, our bootstrap distribution is normal so the confidence interval is symmetric. 
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+hist(mu.hat.set_res,freq = FALSE)
+lines(density(mu.hat.set_res), lwd=5, col='blue')
+```
+
+Modeling the distribution using the normal for Residual sugar would be a poor idea because it follows more closely a log normal distribution.
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+minuslog.lik<-function(mu, sigma){
+  log.lik<-0
+  for(i in 1:1599){
+    log.lik= log.lik+ log(dlnorm(red_wine[i,4], meanlog= mu, sdlog= sigma))
+  }
+  return(-log.lik)
+}
+est.lognorm<-mle(minuslog=minuslog.lik, start=list(mu=log(mean(red_wine[,4])), sigma=log(sd(red_wine[,4]))))
+
+summary(est.lognorm)
+```
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+hist(Residual.sugar, main="Histogram for Residual Sugar")
+
+```
+
+Here, we will find the MLE of the mean and standard deviation using the log normal distribution to obtain probabilities for optimization. 
+
+---
+
+
+### Wine Quality {.tabset}
+
+Wines will be classified as excellent if they have a rating of at least 7. I am going to derive a confidence interval for our excellent/not excellent proportion using the central limit theorem.
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+quality <- red_wine %>% filter(quality >= 7) %>% select(quality)
+
+proportion <- nrow(subset(red_wine, quality >=7))/nrow(red_wine)
+Standard_Error_Quality <- proportion/sqrt(nrow(red_wine))
+
+CLT_CI_PropQuality <- c(proportion - 2*Standard_Error_Quality, proportion + 2*Standard_Error_Quality)
+
+Standard_Error_Quality
+CLT_CI_PropQuality
+```
+
+When comparing the confidence intervals for our proportion of excellent wines for CLT and bootstrapping, it is notable that our confidence interval is much wider for the bootstrapping method. We have a much more significant estimated variability for the mean. 
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+minuslog.lik<-function(mu, sigma){
+  log.lik<-0
+  for(i in 1:1599){
+    log.lik= log.lik+ log(dlnorm(red_wine[i,4], meanlog= mu, sdlog= sigma))
+  }
+  return(-log.lik)
+}
+est.lognorm<-mle(minuslog=minuslog.lik, start=list(mu=log(mean(red_wine[,4])), sigma=log(sd(red_wine[,4]))))
+
+summary(est.lognorm)
+```
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+proportion.hat.set_quality <- NULL
+for (k in 1:2000) {
+  bootstrap <- sample(red_wine[,12], size=1599, replace = T)
+  proportion.hat <- length(subset(bootstrap, bootstrap>=7))/1599
+  proportion.hat.set_quality[k] <- proportion.hat
+}
+
+Bootstrap_mean_quality <- mean(proportion.hat.set_quality)
+
+Bootstrap_variability_quality <- sd(proportion.hat.set_quality)
+
+Bootstrap_variability_quality
+
+Bootstrap_CI_PropQuality <- c(proportion - 2*Bootstrap_variability_quality, proportion + 2*Bootstrap_variability_quality)
+
+Bootstrap_CI_PropQuality
+
+```
+
+Finally, we can find the maximum likelihood estimate of proportion and its standard error using the binomial distribution. 
+
+---
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,fig.keep='all'}
+prop <- as.integer(red_wine[,12] >= 7)
+
+Quality_minuslog.lik <- function(mu){
+  log.lik <- 0
+  for(i in 1:1599) {
+    log.lik <- log.lik+log(dbinom(prop[i], 1, prob=mu))
+  }
+  return (-log.lik)
+}
+
+Quality_density.est <- stats4::mle(minuslog=Quality_minuslog.lik, start=list(mu=mean(prop)))
+
+summary(Quality_density.est)
+
+
+```
+
